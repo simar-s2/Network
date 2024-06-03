@@ -32,18 +32,6 @@ function loadPosts() {
             const postDiv = document.createElement('div');
             postDiv.className = 'post ';
 
-            // Create a like button element for each post
-            const likeButton = document.createElement('button');
-            likeButton.class = 'btn btn-primary';
-
-            likeButton.addEventListener('click', () => likePost(post.id));
-
-            if (post.likes > 0) {
-                likeButton.innerHTML = 'Unlike';
-            } else {
-                likeButton.innerHTML = 'Like';
-            } 
-            
             // Set the innerHTML of the postDiv to display the post's title and content
             postDiv.innerHTML = `
             <div class="col-3 text-truncate">
@@ -55,14 +43,10 @@ function loadPosts() {
             <div class="col-3 text-truncate">
                 Author: ${post.author}
             </div>
-            <div class="col-3 text-truncate">
-                Likes: ${post.likes}
-            </div> 
             `;
 
             // Append post and like button to the postsContainer
             postsContainer.appendChild(postDiv);
-            postDiv.appendChild(likeButton);
         });
     });
 }
@@ -118,18 +102,4 @@ function createPost(event) {
     // Clear the input fields
     titleInput.value = '';
     contentInput.value = '';
-}
-
-/**
- * Function to like a post.
- * It sends a POST request to the '/like_post/{postId}' endpoint.
- * After a successful response, it calls the loadPosts function to update the posts view.
- *
- * @param {number} postId - The id of the post to like.
- */
-likePost = (postId) => {
-    // Send a POST request to the '/like_post/{postId}' endpoint
-    fetch(`/like_post/${postId}`)
-    // After a successful response, load the posts again
-    .then(() => loadPosts());
 }

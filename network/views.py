@@ -8,46 +8,19 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 
-from .models import User, Post, Comment
+from .models import User, Post, Comment, Like
 
 
 @login_required(login_url="/login")
 def index(request):
-    """
-    View function for the home page.
-
-    This function is decorated with the login_required decorator, which means
-    that the user must be logged in to access this page. If the user is not
-    logged in, they will be redirected to the login page.
-
-    Parameters:
-        request (HttpRequest): The HTTP request object.
-
-    Returns:
-        HttpResponse: The HTTP response object containing the rendered HTML page.
-    """
-
     # Render the index.html template with the network/index.html template path.
     return render(request, "network/index.html")
 
 
 @login_required(login_url="/login")
 def get_all_posts(request):
-    """
-    View function for retrieving all posts.
-
-    This function is decorated with the login_required decorator, which means that the user must be logged
-    in to access this page. If the user is not logged in, they will be redirected to the login page.
-
-    Parameters:
-        request (HttpRequest): The HTTP request object.
-
-    Returns:
-        JsonResponse: A JSON response containing a list of serialized post objects, ordered by the
-        created_at field in descending order.
-    """
     # Retrieve all posts and order them by the created_at field in descending order
-    posts = Post.objects.order_by('-created_at')
+    posts = Post.objects.order_by('-timestamp')
     
     # Serialize each post into a dictionary and return them as a JSON response
     return JsonResponse([post.serialize() for post in posts], safe=False)
@@ -56,19 +29,6 @@ def get_all_posts(request):
 @csrf_exempt
 @login_required(login_url="/login")
 def create_post(request):
-    """
-    View function for creating a post.
-
-    This function is decorated with the login_required decorator, which means that the user must be logged in to access this page.
-    If the user is not logged in, they will be redirected to the login page.
-
-    Parameters:
-        request (HttpRequest): The HTTP request object.
-
-    Returns:
-        JsonResponse: A JSON response containing a message indicating the success or failure of the post creation.
-    """
-
     # Check if the request method is POST
     if request.method != "POST":
         # Return error response if the request method is not POST
@@ -99,26 +59,7 @@ def create_post(request):
     except IntegrityError:
         # Return error response if there was an error creating the post
         return JsonResponse({"error": "Error creating post."}, status=500)
-
-# like post view
-def like_post(request, post_id):
-    # Retrieve the post with the given ID
-    post = Post.objects.get(id=post_id)
-
-    # Check if the user has already liked the post
-    liked = False
-    if post.likes.filter(id=request.user.id).exists():
-        # If the user has already liked the post, remove the like
-        post.likes.remove(request.user)
-        liked = False
-    else:
-        # If the user has not liked the post, add the like
-        post.likes.add(request.user)
-        liked = True
-
-    # Return the updated number of likes for the post
-    return JsonResponse({"likes": post.likes.count(), "liked": liked})
-
+        
 
 def login_view(request):
     if request.method == "POST":

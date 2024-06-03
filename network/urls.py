@@ -10,5 +10,4 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("create_post", views.create_post, name="create_post"),
     path("get_all_posts", views.get_all_posts, name="get_all_posts"),
-    path("like_post/<int:post_id>", views.like_post, name="like_post")
 ]

@@ -11,13 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
  * Load all posts and display them in the postsContainer.
  */
 function loadPosts() {
-    // Select the postsContainer and createPostContainer elements
-    const postsContainer = document.querySelector('#posts-view');
-    const createPostContainer = document.querySelector('#create-post-view');
 
     // Set the display properties of the containers
+    const postsContainer = document.querySelector('#posts-view')
     postsContainer.style.display = 'block';
-    createPostContainer.style.display = 'none';
+    document.querySelector('#create-post-view').style.display = 'none';
+    document.querySelector('#user-profile-view').style.display = 'none';
 
     // Clear the contents of the postsContainer
     postsContainer.innerHTML = '';
@@ -30,25 +29,26 @@ function loadPosts() {
         posts.forEach(post => {
             // Create a div element for each post
             const postDiv = document.createElement('div');
-            postDiv.className = 'post ';
+            postDiv.className = 'post';
 
             // Set the innerHTML of the postDiv to display the post's title and content
             postDiv.innerHTML = `
-            <div class="col-3 text-truncate">
+            <div>
                 Title: ${post.title}
             </div>
-            <div class="col-6 text-truncate">
+            <div>
                 Content: ${post.content}
             </div>
-            <div class="col-3 text-truncate">
-                Author: ${post.author}
+            <div>
+                Author: <a class="post_user" href="#" onclick="loadUserProfile('${post.username}')">${post.username}</a>
             </div>
             `;
 
             // Append post and like button to the postsContainer
             postsContainer.appendChild(postDiv);
         });
-    });
+    })
+    .catch(error => console.log(error)); // Add error handling
 }
 
 /**
@@ -56,13 +56,10 @@ function loadPosts() {
  * Hides the posts view and displays the create post view.
  */
 function toggleCreatePostView() {
-    // Select the postsContainer and createPostContainer elements
-    const postsContainer = document.querySelector('#posts-view');
-    const createPostContainer = document.querySelector('#create-post-view');
-
-    // Hide the posts view and display the create post view
-    postsContainer.style.display = 'none';
-    createPostContainer.style.display = 'block';
+    // Hide the other views and display the create post view
+    document.querySelector('#posts-view').style.display = 'none';
+    document.querySelector('#user-profile-view').style.display = 'none';
+    document.querySelector('#create-post-view').style.display = 'block';
 }
 
 /**
@@ -102,4 +99,34 @@ function createPost(event) {
     // Clear the input fields
     titleInput.value = '';
     contentInput.value = '';
+}
+
+function loadUserProfile (username) {
+
+    document.querySelector('#user-profile-view').innerHTML = '';
+    fetch(`/users/${username}`)
+    .then(response => response.json())
+    .then(user => {
+        fetch(`/users/${username}/posts`)
+        const userProfileContainer = document.querySelector('#user-profile-view');
+        const profileDiv = document.createElement('div');
+        profileDiv.innerHTML = `
+        <div>
+            Username: ${user.username}
+        </div>
+        <div>
+            Followers: ${user.followers_count}
+            Following: ${user.following_count}
+        </div>
+        <div>
+            Posts: ${user.posts}
+        </div>
+        `;
+        userProfileContainer.appendChild(profileDiv);
+    })
+    .catch(error => console.log(error))
+
+    document.querySelector('#posts-view').style.display = 'none';
+    document.querySelector('#create-post-view').style.display = 'none';
+    document.querySelector('#user-profile-view').style.display = 'block';
 }

@@ -14,6 +14,11 @@ class User(AbstractUser):
         return {
             "id": self.id,
             "username": self.username,
+            "followers": list(self.followers.values_list('username', flat=True)),
+            "following": list(self.followed_by.values_list('id', flat=True)),
+            "followers_count": self.followers.count(),
+            "following_count": self.followed_by.count(),
+            "posts": list(self.posts_by_user.values_list('id', flat=True)),
         }
 
 class Post(models.Model):
@@ -31,7 +36,7 @@ class Post(models.Model):
             "id": self.id,
             "title": self.title,
             "content": self.content,
-            "author": self.author.username,
+            "username": self.user_id.username,
             "timestamp": self.timestamp,
         }
 

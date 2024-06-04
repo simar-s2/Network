@@ -12,67 +12,70 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <!-- Brand -->
             <a class="navbar-brand" href="#">Network</a>
-            <div>
-                <ul class="navbar-nav mr-auto">
-                    {% if user.is_authenticated %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                {% if user.is_authenticated %}
                     <!-- Authenticated user: Add link to "Following" page -->
                     <li class="nav-item" id="following">
                         <a class="nav-link" href="#">Following</a>
                     </li>
                     <li class="nav-item" id="create-post">
-                        <a class="nav-link" href="#">Create Post</a>
+                        <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
                     </li>
-                    {% endif %}
+                {% endif %}
                     <!-- Link to "All Posts" page -->
-                    <li class="nav-item" id="all-posts">
-                        <a class="nav-link" href="#">All Posts</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">All Posts</a>
                     </li>
-                    {% if user.is_authenticated %}
-                    <!-- Authenticated user: Dropdown menu for user actions -->
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item dropdown">
-                            <!-- Dropdown button for user actions -->
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span>
-                                    <!-- SVG icon for the user -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </span>
-                                {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <!-- Link to log out -->
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Log Out</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    {% else %}
-                    <!-- Non-authenticated user: Dropdown menu for login and register -->
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item dropdown">
-                            <!-- Dropdown button for login and register -->
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span>
-                                    <!-- SVG icon for the user -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </span>
-                                Log In / Register
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <!-- Link to log in -->
-                                <li><a class="dropdown-item" href="{% url 'login' %}">Log In</a></li>
-                                <!-- Link to register -->
-                                <li><a class="dropdown-item" href="{% url 'register' %}">Register</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    {% endif %}
                 </ul>
+                {% if user.is_authenticated %}
+                <!-- Authenticated user: Dropdown menu for user actions -->
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <!-- Dropdown button for user actions -->
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>
+                                <!-- SVG icon for the user -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </span>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <!-- Link to log out -->
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Log Out</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <!-- Non-authenticated user: Dropdown menu for login and register -->
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <!-- Dropdown button for login and register -->
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>
+                                <!-- SVG icon for the user -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </span>
+                            Log In / Register
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <!-- Link to log in -->
+                            <li><a class="dropdown-item" href="{% url 'login' %}">Log In</a></li>
+                            <!-- Link to register -->
+                            <li><a class="dropdown-item" href="{% url 'register' %}">Register</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </nav>
         

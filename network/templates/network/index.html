@@ -1,25 +1,31 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div>
-        <div id="posts-view">
-        </div>
+    {% if user.is_authenticated %}
+    <h2>All Posts</h2>
     
-        <div id="create-post-view">
-            <h2>Create Post</h2>
-            <form method="post" id="create-post-form">
-                
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" name="title">
-                </div>
-                <div class="form-group">
-                    <label for="content">Content</label>
-                    <textarea class="form-control" id="content" name="content"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Create Post</button>
-            </form>
+    {% for post in posts %}
+    <div class="post">
+        <div>
+            Author: {{ post.username }}
+        </div>
+        <div>
+            Title: {{ post.title }}
+        </div>
+        <div>
+            Content: {{ post.content }}
+        </div>
+        <div>
+            Time: {{ post.timestamp }}
+        </div>
+        <div>
+            Likes: 
         </div>
     </div>
+    {% endfor %}
+    {% else %}
+    <h2>Login to see posts</h2>
+    {% endif %}
+
 
 {% endblock %}

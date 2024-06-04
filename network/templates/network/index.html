@@ -2,6 +2,20 @@
 
 {% block body %}
     {% if user.is_authenticated %}
+    <h2>Create Post</h2>
+
+    <form action="{% url 'create_post' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <input autofocus class="form-control" type="text" name="title" placeholder="Title">
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" name="content" placeholder="Content"></textarea>
+        </div>
+        <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+    {% endif %}
+    
     <h2>All Posts</h2>
     
     {% for post in posts %}
@@ -23,9 +37,7 @@
         </div>
     </div>
     {% endfor %}
-    {% else %}
-    <h2>Login to see posts</h2>
-    {% endif %}
+    
 
 
 {% endblock %}

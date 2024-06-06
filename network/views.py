@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render, get_object_or_404, get_list_or_404
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 
 from .models import User, Post, Comment, Like
@@ -14,6 +15,9 @@ from .models import User, Post, Comment, Like
 def index(request):
     # Retrieve and serialize all posts in descending order
     posts = Post.objects.order_by('-timestamp')
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    posts = paginator.get_page(page_number)
     return render(request, "network/index.html", {
         "posts": posts
     })

@@ -10,17 +10,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "followers": list(self.followers.values_list('username', flat=True)),
-            "following": list(self.followed_by.values_list('id', flat=True)),
-            "followers_count": self.followers.count(),
-            "following_count": self.followed_by.count(),
-            "posts": list(self.posts_by_user.values_list('id', flat=True)),
-        }
-
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
@@ -30,15 +19,6 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
-
-    # def serialize(self):
-    #     return {
-    #         "id": self.id,
-    #         "title": self.title,
-    #         "content": self.content,
-    #         "username": self.user_id.username,
-    #         "timestamp": self.timestamp,
-    #     }
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -50,14 +30,6 @@ class Comment(models.Model):
     def __str__(self):
         return self.post_id
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "content": self.content,
-            "user_id": self.user_id.username,
-            "timestamp": self.timestamp,
-        }
-
 class Like(models.Model):
     id = models.AutoField(primary_key=True)
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes_on_post', blank=True, null=True)
@@ -67,12 +39,3 @@ class Like(models.Model):
 
     def __str__(self):
         return self.post_id and self.comment_id
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "post_id": self.post_id.id,
-            "comment_id": self.comment_id.id,
-            "user_id": self.user_id.username,
-            "timestamp": self.timestamp,
-        }

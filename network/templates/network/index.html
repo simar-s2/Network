@@ -15,13 +15,13 @@
         <input class="btn btn-primary" type="submit" value="Submit">
     </form>
     {% endif %}
-    
+
     <h2>All Posts</h2>
     
     {% for post in posts %}
     <div class="post">
         <div>
-            Author: {{ post.username }}
+            Author:  <a href="{% url 'profile' post.username %}">{{ post.username }}</a>
         </div>
         <div>
             Title: {{ post.title }}

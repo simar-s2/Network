@@ -1,0 +1,85 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <h2>{{ user_profile.username }}</h2>
+    <div id="follower-count">
+        {{ followers | length }} followers
+    </div>
+    <div>
+        {{ following | length }} following
+    </div>
+
+    {% if user_profile.id != user.id %}
+        {% if user in followers %}
+            <button class="follow btn btn-primary">Following</button>
+        {% else %}
+            <button class="follow btn btn-primary">Follow</button>
+        {% endif %}
+    {% endif %}
+
+    <h2>{% if user_profile.id == user.id %}Your{% else %}{{ user_profile.username }}'s{% endif %} Posts</h2>
+    
+    {% for post in posts %}
+    <div class="post">
+        <div>
+            Title: {{ post.title }}
+        </div>
+        <div>
+            Content: {{ post.content }}
+        </div>
+        <div>
+            Time: {{ post.timestamp }}
+        </div>
+        <div>
+            Likes: 
+        </div>
+    </div>
+    {% endfor %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function follow() {
+                let username = document.querySelector('h2').textContent;
+                let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                
+                fetch(`/follow/${username}`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                  },
+                })
+                .then(response => {
+                    // Handle the response
+                    if (response.ok) {
+                    return response.json();
+                    } else {
+                    throw new Error('Failed to follow');
+                    }
+                })
+                .then(data => {
+                    // Update the follower count on the web page
+                    const followerCountElement = document.getElementById('follower-count');
+                    followerCountElement.textContent = `${data.follower_count} followers`;
+                    const followButton = document.querySelector('.follow');
+                    if (followButton.textContent === 'Follow') {
+                        followButton.textContent = 'Following';
+                    } else if (followButton.textContent === 'Following') {
+                        followButton.textContent = 'Follow';
+                    }
+                    
+                    console.log(data.follower_count)
+                })
+                .catch(error => {
+                    // Handle any errors
+                    console.error(error);
+                });
+
+            }
+        
+            const followButton = document.querySelector('.follow');
+            followButton.addEventListener('click', follow);
+        });
+    </script>
+
+{% endblock %}

@@ -4,14 +4,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import JsonResponse
-from django.shortcuts import HttpResponse, HttpResponseRedirect, render
+from django.shortcuts import HttpResponse, HttpResponseRedirect, render, get_object_or_404, get_list_or_404
 from django.urls import reverse
 
 
 from .models import User, Post, Comment, Like
 
 
-@login_required(login_url="/login")
 def index(request):
     # Retrieve and serialize all posts in descending order
     posts = [post.serialize() for post in Post.objects.order_by('-timestamp')]
@@ -52,16 +51,31 @@ def create_post(request):
 
 
 def profile(request, username):
-    try:
-        user = User.objects.get(username=username)
-        if user is None:
-            return JsonResponse({"error": "User not found."}, status=404)
-        user_items = user.serialize()
-        return JsonResponse(user_items, safe=False)
-    except User.DoesNotExist:
-        return JsonResponse({"error": "User not found."}, status=404)
-    except Exception:
-        return JsonResponse({"error": "Internal server error."}, status=500)
+    user_profile = get_object_or_404(User, username=username)
+    followers = user_profile.followers.all()
+    following = user_profile.followed_by.all()
+    posts = Post.objects.filter(user_id=user_profile.id).order_by('-timestamp')
+    current_user = request.user
+
+    return render(request, "network/profile.html", {
+        "user_profile": user_profile,
+        "user": current_user,
+        "followers": followers,
+        "following": following,
+        "posts": posts
+    })
+
+
+def follow(request, username):
+    if request.method == "POST":
+        current_user = request.user
+        user_profile = get_object_or_404(User, username=username)
+        if current_user == user_profile: return JsonResponse({"success": False})
+        elif current_user in user_profile.followers.all():
+            user_profile.followers.remove(current_user)
+        else:
+            user_profile.followers.add(current_user)
+        return JsonResponse({"follower_count": user_profile.followers.count()})
 
 
 def login_view(request):
@@ -114,3 +128,4 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+

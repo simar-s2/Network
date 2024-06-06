@@ -1,0 +1,25 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <h2>Following posts</h2>
+    
+    {% for post in posts %}
+    <div class="post">
+        <div>
+            Author: <a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a>
+        </div>
+        <div>
+            Title: {{ post.title }}
+        </div>
+        <div>
+            Content: {{ post.content }}
+        </div>
+        <div>
+            Time: {{ post.timestamp }}
+        </div>
+        <div>
+            Likes: 
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}

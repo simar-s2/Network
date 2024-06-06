@@ -21,7 +21,7 @@
     {% for post in posts %}
     <div class="post">
         <div>
-            Author:  <a href="{% url 'profile' post.username %}">{{ post.username }}</a>
+            Author:  <a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a>
         </div>
         <div>
             Title: {{ post.title }}

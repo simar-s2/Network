@@ -13,7 +13,7 @@ from .models import User, Post, Comment, Like
 
 def index(request):
     # Retrieve and serialize all posts in descending order
-    posts = [post.serialize() for post in Post.objects.order_by('-timestamp')]
+    posts = Post.objects.order_by('-timestamp')
     return render(request, "network/index.html", {
         "posts": posts
     })
@@ -77,6 +77,25 @@ def follow(request, username):
             user_profile.followers.add(current_user)
         return JsonResponse({"follower_count": user_profile.followers.count()})
 
+
+def following(request):
+    try:
+        current_user = request.user
+        followings = current_user.followed_by.all()
+        posts = []
+        for following in followings:
+            posts += list(following.posts_by_user.all())
+            print(posts[1].user_id)
+        posts = sorted(posts, key=lambda x: x.timestamp, reverse=True)
+
+        return render(request, "network/following.html", {
+            "posts": posts
+        })
+    except AttributeError:
+        # If current_user is None or doesn't have followed_by attribute
+        return render(request, "network/following.html", {
+            "posts": []
+        })
 
 def login_view(request):
     if request.method == "POST":

@@ -31,14 +31,14 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "content": self.content,
-            "username": self.user_id.username,
-            "timestamp": self.timestamp,
-        }
+    # def serialize(self):
+    #     return {
+    #         "id": self.id,
+    #         "title": self.title,
+    #         "content": self.content,
+    #         "username": self.user_id.username,
+    #         "timestamp": self.timestamp,
+    #     }
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)

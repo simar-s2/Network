@@ -10,7 +10,7 @@ from django.core.paginator import Paginator
 import datetime
 
 
-from .models import User, Post, Comment, Like
+from .models import User, Post, Like
 
 
 def index(request):
@@ -29,6 +29,7 @@ def index(request):
     posts = Post.objects.all().order_by('-timestamp')
     for post in posts:
         post.formatted_timestamp = greatest_unit(post.timestamp)
+        post.user_has_liked = Like.objects.filter(user_id=request.user).filter(post_id=post).exists() if request.user.is_authenticated else False
     
 
     # Paginate the posts with a page size of 10
@@ -77,7 +78,7 @@ def create_post(request):
             messages.error(request, "Error creating post.")
             return HttpResponseRedirect(reverse("index"))
 
-
+@login_required(login_url="/login")
 def profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     followers = user_profile.followers.all()
@@ -93,7 +94,7 @@ def profile(request, username):
         "posts": posts
     })
 
-
+@login_required(login_url="/login")
 def follow(request, username):
     if request.method == "POST":
         current_user = request.user
@@ -105,7 +106,7 @@ def follow(request, username):
             user_profile.followers.add(current_user)
         return JsonResponse({"follower_count": user_profile.followers.count()})
 
-
+@login_required(login_url="/login")
 def following(request):
     try:
         current_user = request.user
@@ -125,16 +126,54 @@ def following(request):
             "posts": []
         })
 
-
+@login_required(login_url="/login")
 def edit_post(request, post_id):
+    """
+    Edit a post if the user is the post's author.
+    
+    Args:
+        request (HttpRequest): The HTTP request object.
+        post_id (int): The ID of the post to be edited.
+        
+    Returns:
+        JsonResponse: The JSON response containing the updated content of the post,
+            or an error message if the user does not have permission to edit the post.
+    """
     if request.method == "POST":
+        # Get the post with the given ID
         post = get_object_or_404(Post, id=post_id)
+        
+        # Check if the user is the post's author
         if post.user_id == request.user:
+            # Get the updated content from the request
             content = request.POST.get("content")
+            
+            # Update the post's content and save it
             post.content = content
             post.save()
+            
+            # Return the updated content in a JSON response
             return JsonResponse({"content": content})
-        else: return JsonResponse({"error": "You don't have permission to edit this post."})
+        else:
+            # Return an error message if the user does not have permission to edit the post
+            return JsonResponse({"error": "You don't have permission to edit this post."})
+
+
+@login_required(login_url="/login")
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    liked = False
+
+    like, created = Like.objects.get_or_create(post_id=post, user_id=request.user)
+    if created:
+        post.likes_count += 1
+        liked = True
+    else:
+        like.delete()
+        post.likes_count -= 1
+
+    post.save()
+    return JsonResponse({'likes_count': post.likes_count, 'liked': liked})
 
 
 def login_view(request):

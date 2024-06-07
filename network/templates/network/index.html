@@ -1,16 +1,17 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     {% if user.is_authenticated %}
+    <!-- form to create a new post -->
     <h2>Create Post</h2>
-
     <form action="{% url 'create_post' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
+            <!-- title input field -->
             <input autofocus class="form-control" type="text" name="title" placeholder="Title">
         </div>
         <div class="form-group">
+            <!-- content textarea field -->
             <textarea class="form-control" name="content" placeholder="Content"></textarea>
         </div>
         <input class="btn btn-primary" type="submit" value="Submit">
@@ -18,17 +19,29 @@
     {% endif %}
 
     <h2>All Posts</h2>
-    
     {% for post in posts %}
-    <div class="post" id="post-{{ post.id }}">
-        <p class="title">{{ post.title }}</p>
-        <p class="content">{{ post.content }}</p>
+    <div class="post" id="post-{{ post.id }}" style="border: 1px solid black; padding: 1rem; margin: 1rem;">
+        <!-- post title -->
+        <p class="title"><strong>{{ post.title }}</strong></p>
+        <!-- post content -->
+        <p class="content" {% if user.username == post.user_id.username %} data-post-id="{{ post.id }}"{% endif %}>{{ post.content }}
+            {% if user.username == post.user_id.username %}
+            <!-- form to edit the post content -->
+            <form id="edit-form-{{ post.id }}" class="edit-form" style="display:none;" data-post-id="{{ post.id }}">
+                <textarea name="content">{{ post.content }}</textarea>
+                <button type="submit">Save</button>
+            </form>
+            {% endif %}
+        </p>
+        <!-- author link -->
+        <p>Author: <a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a></p>
+        <!-- post timestamp -->
         <p class="timestamp">{{ post.formatted_timestamp }}</p>
-        <button data-post-id="{{ post.id }}" class="edit-button">Edit</button>
-        <form id="edit-form-{{ post.id }}" class="edit-form" style="display:none;" data-post-id="{{ post.id }}">
-            <textarea name="content">{{ post.content }}</textarea>
-            <button type="submit">Save</button>
-        </form>
+        <!-- like button -->
+        <button class="like-button btn btn-primary" data-post-id="{{ post.id }}">
+            {% if post.user_has_liked %}Unlike{% else %}Like{% endif %}
+        </button>
+        <span class="like-count">{{ post.likes_count }}</span> likes
     </div>
     {% endfor %}
 
@@ -39,31 +52,78 @@
     {% endif %}
 
     <script>
+        // wait for the document to fully load
         document.addEventListener('DOMContentLoaded', function() {
-            const editButtons = document.querySelectorAll('.edit-button');
+            const likeButtons = document.querySelectorAll('.like-button');
 
-            editButtons.forEach(button => {
+            likeButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const postId = this.getAttribute('data-post-id');
+                    likePost(postId, this);
+                });
+            });
+            // get all the post content elements
+            const editDoubleClick = document.querySelectorAll('.content');
+
+            // add a double click event listener to each post content element
+            editDoubleClick.forEach(content => {
+                content.addEventListener('dblclick', function() {
+                    // get the post id from the data attribute
+                    const postId = this.getAttribute('data-post-id');
+                    // show the edit form for the post
                     showEditForm(postId);
                 });
             });
 
+            // get all the edit forms
             const editForms = document.querySelectorAll('.edit-form');
 
+            // add a submit event listener to each edit form
             editForms.forEach(form => {
                 form.addEventListener('submit', function(event) {
+                    // get the post id from the data attribute
                     const postId = this.getAttribute('data-post-id');
+                    // submit the form data to the server to edit the post
                     editPost(event, postId);
                 });
             });
         });
 
+        function likePost(postId, button) {
+            fetch(`/like_post/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const post = document.getElementById(`post-${postId}`);
+                const likeCount = post.querySelector('.like-count');
+                likeCount.textContent = data.likes_count;
+
+                if (data.liked) {
+                    button.textContent = 'Unlike';
+                } else {
+                    button.textContent = 'Like';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // show the edit form for a post
         function showEditForm(postId) {
+            // get the edit form element by id
             const form = document.getElementById(`edit-form-${postId}`);
+            // get the post content element by class
+            const content = document.querySelector(`#post-${postId} .content`);
+            // hide the original post content
+            content.style.display = 'none';
+            // show the edit form
             form.style.display = 'block';
         }
 
+        // submit the form data to edit a post
         function editPost(event, postId) {
             event.preventDefault();
             const form = event.target;
@@ -78,13 +138,26 @@
             })
             .then(response => response.json())
             .then(data => {
+                if (data.error) {
+                    console.log('Error:', data);
+                    return;
+                }
+                // get the post element by id
                 const post = document.getElementById(`post-${postId}`);
+                // update the post content
                 post.querySelector('p.content').textContent = data.content;
+                // get the post content element by class
+                const content = document.querySelector(`#post-${postId} .content`);
+                // show the updated post content
+                content.style.display = 'block';
+                // hide the edit form
                 form.style.display = 'none';
+
             })
             .catch(error => console.error('Error:', error));
         }
 
+        // get the csrf token from the cookie
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {

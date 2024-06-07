@@ -16,26 +16,14 @@ class Post(models.Model):
     content = models.TextField()
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts_by_user', blank=True, null=True)
     timestamp = models.DateTimeField(default=now)
+    likes_count = models.PositiveIntegerField(default=0)
 
-    def __str__(self):
-        return self.title
-
-class Comment(models.Model):
-    id = models.AutoField(primary_key=True)
-    post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments_on_post', blank=True, null=True)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments_by_user', blank=True, null=True)
-    content = models.TextField()
-    timestamp = models.DateTimeField(default=now)
-
-    def __str__(self):
-        return self.post_id
 
 class Like(models.Model):
     id = models.AutoField(primary_key=True)
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes_on_post', blank=True, null=True)
-    comment_id = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes_on_comment', blank=True, null=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.post_id and self.comment_id
+        return str(self.id)

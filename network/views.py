@@ -7,19 +7,43 @@ from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render, get_object_or_404, get_list_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
+import datetime
 
 
 from .models import User, Post, Comment, Like
 
 
 def index(request):
-    # Retrieve and serialize all posts in descending order
-    posts = Post.objects.order_by('-timestamp')
+
+    def greatest_unit(timestamp):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        diff = now - timestamp
+
+        if diff.days > 1: return f"{diff.days} days ago"
+        elif diff.days == 1: return "1 day ago"
+        elif diff.seconds >= 3600: return f"{diff.seconds // 3600} hours ago"
+        elif diff.seconds >= 60: return f"{diff.seconds // 60} minutes ago"
+        else: return "just now"
+
+    # Retrieve all posts in descending order
+    posts = Post.objects.all().order_by('-timestamp')
+    for post in posts:
+        post.formatted_timestamp = greatest_unit(post.timestamp)
+    
+
+    # Paginate the posts with a page size of 10
     paginator = Paginator(posts, 10)
+
+    # Get the page number from the request query parameters or default to the first page
     page_number = request.GET.get('page')
+
+    # Get the page of posts based on the page number
     posts = paginator.get_page(page_number)
+
+    # Render the "network/index.html" template with the posts as context
     return render(request, "network/index.html", {
-        "posts": posts
+        "posts": posts,
+        "greatest_unit": greatest_unit
     })
 
 
@@ -100,6 +124,18 @@ def following(request):
         return render(request, "network/following.html", {
             "posts": []
         })
+
+
+def edit_post(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+        if post.user_id == request.user:
+            content = request.POST.get("content")
+            post.content = content
+            post.save()
+            return JsonResponse({"content": content})
+        else: return JsonResponse({"error": "You don't have permission to edit this post."})
+
 
 def login_view(request):
     if request.method == "POST":

@@ -1,6 +1,7 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     {% if user.is_authenticated %}
     <h2>Create Post</h2>
 
@@ -19,22 +20,15 @@
     <h2>All Posts</h2>
     
     {% for post in posts %}
-    <div class="post">
-        <div>
-            Author:  <a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a>
-        </div>
-        <div>
-            Title: {{ post.title }}
-        </div>
-        <div>
-            Content: {{ post.content }}
-        </div>
-        <div>
-            Time: {{ post.timestamp }}
-        </div>
-        <div>
-            Likes: 
-        </div>
+    <div class="post" id="post-{{ post.id }}">
+        <p class="title">{{ post.title }}</p>
+        <p class="content">{{ post.content }}</p>
+        <p class="timestamp">{{ post.formatted_timestamp }}</p>
+        <button data-post-id="{{ post.id }}" class="edit-button">Edit</button>
+        <form id="edit-form-{{ post.id }}" class="edit-form" style="display:none;" data-post-id="{{ post.id }}">
+            <textarea name="content">{{ post.content }}</textarea>
+            <button type="submit">Save</button>
+        </form>
     </div>
     {% endfor %}
 
@@ -44,4 +38,67 @@
     <a href="?page={{ posts.next_page_number }}">Next</a>
     {% endif %}
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editButtons = document.querySelectorAll('.edit-button');
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    showEditForm(postId);
+                });
+            });
+
+            const editForms = document.querySelectorAll('.edit-form');
+
+            editForms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    const postId = this.getAttribute('data-post-id');
+                    editPost(event, postId);
+                });
+            });
+        });
+
+        function showEditForm(postId) {
+            const form = document.getElementById(`edit-form-${postId}`);
+            form.style.display = 'block';
+        }
+
+        function editPost(event, postId) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(`/edit_post/${postId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const post = document.getElementById(`post-${postId}`);
+                post.querySelector('p.content').textContent = data.content;
+                form.style.display = 'none';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    </script>
 {% endblock %}

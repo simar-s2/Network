@@ -15,6 +15,7 @@ from .models import User, Post, Like
 
 def index(request):
 
+    
     def greatest_unit(timestamp):
         now = datetime.datetime.now(datetime.timezone.utc)
         diff = now - timestamp
@@ -41,10 +42,13 @@ def index(request):
     # Get the page of posts based on the page number
     posts = paginator.get_page(page_number)
 
+    page_numbers = range(max(posts.number - 2, 1), min(posts.number + 2, posts.paginator.num_pages) + 1)
+
     # Render the "network/index.html" template with the posts as context
     return render(request, "network/index.html", {
         "posts": posts,
-        "greatest_unit": greatest_unit
+        "greatest_unit": greatest_unit,
+        "page_numbers": page_numbers,
     })
 
 

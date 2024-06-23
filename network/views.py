@@ -13,10 +13,7 @@ import datetime
 from .models import User, Post, Like
 
 
-def index(request):
-
-    
-    def greatest_unit(timestamp):
+def greatest_unit(timestamp):
         now = datetime.datetime.now(datetime.timezone.utc)
         diff = now - timestamp
 
@@ -26,13 +23,15 @@ def index(request):
         elif diff.seconds >= 60: return f"{diff.seconds // 60} minutes ago"
         else: return "just now"
 
+
+def index(request):
+
     # Retrieve all posts in descending order
     posts = Post.objects.all().order_by('-timestamp')
     for post in posts:
         post.formatted_timestamp = greatest_unit(post.timestamp)
         post.user_has_liked = Like.objects.filter(user_id=request.user).filter(post_id=post).exists() if request.user.is_authenticated else False
     
-
     # Paginate the posts with a page size of 10
     paginator = Paginator(posts, 10)
 
@@ -42,7 +41,7 @@ def index(request):
     # Get the page of posts based on the page number
     posts = paginator.get_page(page_number)
 
-    page_numbers = range(max(posts.number - 2, 1), min(posts.number + 2, posts.paginator.num_pages) + 1)
+    page_numbers = range(max(posts.number - 1, 1), min(posts.number + 1, posts.paginator.num_pages) + 1)
 
     # Render the "network/index.html" template with the posts as context
     return render(request, "network/index.html", {
@@ -68,7 +67,7 @@ def create_post(request):
             if not title or not content:
                 # Display an error message and redirect to index
                 messages.error(request, "Title and content are required.")
-                return HttpResponseRedirect(reverse("index"))
+                return HttpResponseRedirect(reverse("create_post"))
 
             # Create a new post with the provided data and current user
             post = Post(title=title, content=content, user_id=request.user)
@@ -80,7 +79,10 @@ def create_post(request):
         except (ValueError, IntegrityError):
             # Display an error message and redirect to index
             messages.error(request, "Error creating post.")
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("create_post"))
+
+    else: 
+        return render(request, "network/create_post.html")
 
 @login_required(login_url="/login")
 def profile(request, username):
@@ -90,12 +92,25 @@ def profile(request, username):
     posts = Post.objects.filter(user_id=user_profile.id).order_by('-timestamp')
     current_user = request.user
 
+    # Paginate the posts with a page size of 10
+    paginator = Paginator(posts, 10)
+
+    # Get the page number from the request query parameters or default to the first page
+    page_number = request.GET.get('page')
+
+    # Get the page of posts based on the page number
+    posts = paginator.get_page(page_number)
+
+    page_numbers = range(max(posts.number - 1, 1), min(posts.number + 1, posts.paginator.num_pages) + 1)
+
     return render(request, "network/profile.html", {
         "user_profile": user_profile,
         "user": current_user,
         "followers": followers,
         "following": following,
-        "posts": posts
+        "posts": posts,
+        "greatest_unit": greatest_unit,
+        "page_numbers": page_numbers,
     })
 
 @login_required(login_url="/login")
@@ -118,12 +133,31 @@ def following(request):
         posts = []
         for following in followings:
             posts += list(following.posts_by_user.all())
-            print(posts[1].user_id)
         posts = sorted(posts, key=lambda x: x.timestamp, reverse=True)
 
+        for post in posts:
+            post.formatted_timestamp = greatest_unit(post.timestamp)
+            post.user_has_liked = Like.objects.filter(user_id=request.user).filter(post_id=post).exists() if request.user.is_authenticated else False
+
+        # Paginate the posts with a page size of 10
+        paginator = Paginator(posts, 10)
+
+        # Get the page number from the request query parameters or default to the first page
+        page_number = request.GET.get('page')
+
+        # Get the page of posts based on the page number
+        posts = paginator.get_page(page_number)
+
+        page_numbers = range(max(posts.number - 1, 1), min(posts.number + 1, posts.paginator.num_pages) + 1)
+        
+
         return render(request, "network/following.html", {
-            "posts": posts
+            "posts": posts,
+            "greatest_unit": greatest_unit,
+            "page_numbers": page_numbers,
         })
+
+        
     except AttributeError:
         # If current_user is None or doesn't have followed_by attribute
         return render(request, "network/following.html", {

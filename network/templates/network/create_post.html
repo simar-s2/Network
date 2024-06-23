@@ -1,0 +1,23 @@
+{% extends "network/layout.html" %}
+
+{% block heading %} 
+<h2>Create Post</h2>
+{% endblock %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+    <!-- form to create a new post -->
+    <form action="{% url 'create_post' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- title input field -->
+            <input autofocus class="form-control" type="text" name="title" placeholder="Title">
+        </div>
+        <div class="form-group">
+            <!-- content textarea field -->
+            <textarea class="form-control" name="content" placeholder="Content"></textarea>
+        </div>
+        <input class="btn btn-dark" type="submit" value="Submit">
+    </form>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+.like-button {
+    cursor: pointer;
+}
+
+.like-button:hover {
+    opacity: 0.7;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.nav-link {
+    padding-right: initial;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.content {
+    height: 100vh;
+    overflow-y: auto;
+}

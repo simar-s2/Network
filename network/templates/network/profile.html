@@ -1,6 +1,6 @@
-{% extends "network/layout.html" %}
+{% extends "network/posts_layout.html" %}
 
-{% block body %}
+{% block profile %}
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <h2>{{ user_profile.username }}</h2>
     <div id="follower-count">
@@ -17,25 +17,7 @@
             <button class="follow btn btn-primary">Follow</button>
         {% endif %}
     {% endif %}
-
-    <h2>{% if user_profile.id == user.id %}Your{% else %}{{ user_profile.username }}'s{% endif %} Posts</h2>
     
-    {% for post in posts %}
-    <div class="post">
-        <div>
-            Title: {{ post.title }}
-        </div>
-        <div>
-            Content: {{ post.content }}
-        </div>
-        <div>
-            Time: {{ post.timestamp }}
-        </div>
-        <div>
-            Likes: 
-        </div>
-    </div>
-    {% endfor %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function follow() {

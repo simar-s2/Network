@@ -2,26 +2,32 @@
 
 {% block profile %}
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    <h2>{{ user_profile.username }}</h2>
-    <div id="follower-count">
-        {{ followers | length }} followers
-    </div>
-    <div>
-        {{ following | length }} following
-    </div>
+    <h2 class="username">{{ user_profile.username }}</h2>
 
-    {% if user_profile.id != user.id %}
-        {% if user in followers %}
-            <button class="follow btn btn-primary">Following</button>
-        {% else %}
-            <button class="follow btn btn-primary">Follow</button>
-        {% endif %}
-    {% endif %}
+    <div class="row mb-5">
+        <div class="col-3">
+            <div id="follower-count">
+                {{ followers | length }} followers
+            </div>
+            <div>
+                {{ following | length }} following
+            </div>
+        </div>
+        <div class="col-9 align-content-center">
+            {% if user_profile.id != user.id %}
+                {% if user in followers %}
+                    <button class="follow btn btn-dark">Following</button>
+                {% else %}
+                    <button class="follow btn btn-dark">Follow</button>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function follow() {
-                let username = document.querySelector('h2').textContent;
+                let username = document.querySelector('.username').textContent;
                 let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
                 
                 fetch(`/follow/${username}`, {

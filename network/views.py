@@ -17,8 +17,16 @@ def greatest_unit(timestamp):
         now = datetime.datetime.now(datetime.timezone.utc)
         diff = now - timestamp
 
-        if diff.days > 1: return f"{diff.days} days ago"
+        if diff.days > 365: return f"{diff.days // 365} years ago"
+        elif diff.days == 365: return "1 year ago"
+        elif diff.days > 30: return f"{diff.days // 30} months ago"
+        elif diff.days == 30: return "1 month ago"
+        elif diff.days > 14: return f"{diff.days // 7} weeks ago"
+        elif diff.days > 7: return "1 week ago"
+        elif diff.days > 1: return f"{diff.days} days ago"
         elif diff.days == 1: return "1 day ago"
+        elif diff.days > 7: return f"{diff.days // 7} weeks ago"
+        elif diff.days > 30: return f"{diff.days // 30} months ago"
         elif diff.seconds >= 3600: return f"{diff.seconds // 3600} hours ago"
         elif diff.seconds >= 60: return f"{diff.seconds // 60} minutes ago"
         else: return "just now"
@@ -46,7 +54,6 @@ def index(request):
     # Render the "network/index.html" template with the posts as context
     return render(request, "network/index.html", {
         "posts": posts,
-        "greatest_unit": greatest_unit,
         "page_numbers": page_numbers,
     })
 
@@ -89,8 +96,12 @@ def profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     followers = user_profile.followers.all()
     following = user_profile.followed_by.all()
-    posts = Post.objects.filter(user_id=user_profile.id).order_by('-timestamp')
     current_user = request.user
+    posts = Post.objects.filter(user_id=user_profile.id).order_by('-timestamp')
+    for post in posts:
+        post.formatted_timestamp = greatest_unit(post.timestamp)
+        post.user_has_liked = Like.objects.filter(user_id=request.user).filter(post_id=post).exists() if request.user.is_authenticated else False
+    
 
     # Paginate the posts with a page size of 10
     paginator = Paginator(posts, 10)

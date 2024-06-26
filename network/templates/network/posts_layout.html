@@ -1,4 +1,4 @@
-{% extends "network/layout.html" %}
+{% extends "network/layout1.html" %}
 
 {% block heading %} 
 {% endblock %}
@@ -8,37 +8,49 @@
     {% block profile %}
     {% endblock %}
     {% for post in posts %}
-    <div class="post" id="post-{{ post.id }}" style="border: 1px solid #ccc; padding: 1rem; margin: 1rem;">
-        <!-- post title -->
-        <p class="title"><strong>{{ post.title }}</strong></p>
-        <!-- post content -->
-        <p class="post-content" {% if user.username == post.user_id.username %} data-post-id="{{ post.id }}"{% endif %}>{{ post.content }}
-            {% if user.username == post.user_id.username %}
-            <!-- form to edit the post content -->
-            <form id="edit-form-{{ post.id }}" class="edit-form" style="display:none;" data-post-id="{{ post.id }}">
-                <textarea name="content">{{ post.content }}</textarea>
-                <button type="submit">Save</button>
-            </form>
-            {% endif %}
-        </p>
-        <!-- author link -->
-        <p>Author: <a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a></p>
-        <!-- post timestamp -->
-        <p class="timestamp">{{ post.formatted_timestamp }}</p>
-        <!-- like button -->
-        {% if user.is_authenticated %}
-        <div>
-            <span class="like-count">{{ post.likes_count }}</span>
-            <span class="like-button" data-post-id="{{ post.id }}">
-                {% if post.user_has_liked %}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                {% else %}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                {% endif %}
-            </span>
+    <div class="post mb-4" id="post-{{ post.id }}">
+        <div class="row">
+            <div class="col-2 col-lg-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="2rem" height="2rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="col-10 col-lg-11">
+                <div class="row mb-1">
+                    <!-- author link -->
+                    <div class="author"><a href="{% url 'profile' post.user_id %}">{{ post.user_id }}</a></div>
+                    <!-- post timestamp -->
+                    <div class="timestamp">{{ post.formatted_timestamp }}</div>
+                </div>
+                <div class="row mb-1">
+                    <!-- post content -->
+                    <div class="post-content" {% if user.username == post.user_id.username %} data-post-id="{{ post.id }}"{% endif %}>{{ post.content }}</div>
+                    {% if user.username == post.user_id.username %}
+                    <!-- form to edit the post content -->
+                    <form id="edit-form-{{ post.id }}" class="edit-form" style="display:none;" data-post-id="{{ post.id }}">
+                        <textarea name="content">{{ post.content }}</textarea>
+                        <button type="submit">Save</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="row mb-1">
+                    <!-- like button -->
+                    {% if user.is_authenticated %}
+                    <div>
+                        <span class="like-button" data-post-id="{{ post.id }}">
+                            {% if post.user_has_liked %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 24 24" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            {% endif %}
+                        </span>
+                        <span class="like-count">{{ post.likes_count }} likes</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-
-        {% endif %}
     </div>
     {% endfor %}
 
@@ -129,12 +141,12 @@
             .then(data => {
                 const post = document.getElementById(`post-${postId}`);
                 const likeCount = post.querySelector('.like-count');
-                likeCount.textContent = data.likes_count;
+                likeCount.textContent = `${data.likes_count} likes`;
 
                 if (data.liked) {
-                    button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+                    button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 24 24" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
                 } else {
-                    button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+                    button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
                 }
             })
             .catch(error => console.error('Error:', error));

@@ -4,7 +4,7 @@ A small social network, think a stripped-down Twitter, built with Django. Users
 can post, follow each other, like posts, and edit their own posts inline. This is
 my solution to **CS50W Project 4: Network**.
 
-> 📸 **Screenshot needed**: the main feed with a couple of posts, the "New Post" box, and the like/edit controls visible. Save to `docs/feed.png` and replace this line with `![Feed](docs/feed.png)`.
+![Feed](docs/feed.png)
 
 ## Quickstart
 
